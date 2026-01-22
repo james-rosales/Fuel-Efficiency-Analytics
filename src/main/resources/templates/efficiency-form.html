@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Fuel Efficiency Analyzer</title>
+    <link rel="stylesheet" href="/css/efficiency.css">
+</head>
+<body>
+
+    <div class="main-container">
+        <h1>🚗 Fuel Efficiency Analytics</h1>
+
+        <div class="nav-links">
+            <a th:href="@{/analytics/dashboard}" class="dashboard-button">📈 View Analytics</a>
+            <a th:href="@{/eco-leaderboard}" class="dashboard-button">🏆 Eco Leaderboard</a>
+        </div>
+
+        <h3>Input Trip Data</h3>
+
+        <form th:action="@{/calculate}" th:object="${tripData}" method="POST">
+
+            <div class="form-group">
+                <label for="vehicleType">Type of Car (Select or Type):</label>
+                <input type="text" 
+                       id="vehicleType" 
+                       th:field="*{vehicleType}" 
+                       list="phCarModels" 
+                       placeholder="e.g. Toyota Vios" 
+                       autocomplete="off"
+                       required>
+                
+                <datalist id="phCarModels">
+                    <option th:each="car : ${carList}" th:value="${car}" th:text="${car}"></option>
+                </datalist>
+                <small>Can't find your car? Just type it in!</small>
+            </div>
+
+            <div class="form-group">
+                <label for="plateNumber">Plate Number:</label>
+                <input type="text" 
+                       id="plateNumber" 
+                       th:field="*{plateNumber}" 
+                       placeholder="e.g. ABC-123" 
+                       required>
+            </div>
+
+            <div class="form-group">
+                <label for="distanceKm">Distance Traveled (Km):</label>
+                <input type="number" id="distanceKm" th:field="*{distanceKm}" step="0.01" min="0" required>
+            </div>
+
+            <div class="form-group">
+                <label for="fuelConsumedLiters">Fuel Consumed (Liters):</label>
+                <input type="number" id="fuelConsumedLiters" th:field="*{fuelConsumedLiters}" step="0.01" min="0.01" required>
+            </div>
+
+            <div class="form-group">
+                <label for="fuelPricePerLiter">Fuel Price (₱/Liter) - Optional:</label>
+                <input type="number" 
+                       id="fuelPricePerLiter" 
+                       th:field="*{fuelPricePerLiter}" 
+                       step="0.01" 
+                       min="0" 
+                       placeholder="e.g., 62.15">
+            </div>
+
+            <button type="submit">Analyze & Save Efficiency</button>
+        </form>
+
+        <hr>
+
+        <h2>Historical Reports from MySQL</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Vehicle</th>
+                    <th>Plate No.</th> <th>Km/L</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="report : ${reports}">
+                    <td th:text="${report.vehicleType}"></td>
+                    <td th:text="${report.plateNumber}"></td>
+                    <td th:text="${report.efficiencyKmPerL}"></td>
+                    <td th:text="${report.message}"></td>
+                    <td th:text="${#temporals.format(report.analyzedAt, 'yyyy-MM-dd HH:mm')}"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</body>
+</html>

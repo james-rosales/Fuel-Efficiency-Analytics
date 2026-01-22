@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Eco-Driver Leaderboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/efficiency.css}">
+    <style>
+        .eco-card { border-left: 5px solid #28a745; transition: transform 0.2s; }
+        .eco-card:hover { transform: scale(1.02); }
+        .rank-1 { background-color: #d4edda; border: 2px solid #28a745; }
+        .score-badge { font-size: 1.2rem; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; }
+        .progress { background-color: #e9ecef; border-radius: 10px; }
+        .progress-bar { border-radius: 10px; }
+        
+        /* Style for the floating back button at the bottom */
+        .btn-back-floating {
+            margin-top: 20px;
+            padding: 10px 25px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+<div class="container mt-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="display-5 text-success">🌿 Eco-Driver Leaderboard</h1>
+            <p class="lead">Top performing vehicles based on CO<sub>2</sub> savings and efficiency scores.</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="/analytics/dashboard" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Rank</th>
+                        <th>Vehicle Type/Plate no.</th>
+                        <th>Total Distance (km)</th>
+                        <th>CO2 Saved (kg)</th>
+                        <th>Eco Score</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-body">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="text-center mb-5">
+        <a href="/analytics/dashboard" class="btn btn-success btn-back-floating shadow">
+            <i class="fas fa-chevron-left me-2"></i> Return to Analytics Dashboard
+        </a>
+    </div>
+</div>
+
+<script>
+    /**
+     * Fetches leaderboard data from the REST API and renders it to the table.
+     */
+    async function loadLeaderboard() {
+        try {
+            const response = await fetch('/api/analytics/leaderboard');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            
+            // Sort data by ecoScore descending (highest score first)
+            data.sort((a, b) => b.ecoScore - a.ecoScore);
+
+            const tbody = document.getElementById('leaderboard-body');
+            
+            tbody.innerHTML = data.map((item, index) => {
+                const displaySaved = Math.max(0, item.co2Saved).toFixed(2);
+                
+                return `
+                <tr class="${index === 0 ? 'table-success' : ''}">
+                    <td><strong>#${index + 1}</strong></td>
+                    <td>${item.vehicleId}</td>
+                    <td>${item.totalDistance.toFixed(1)}</td>
+                    <td class="text-success fw-bold">${displaySaved} kg</td>
+                    <td style="width: 200px;">
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar bg-success" role="progressbar" 
+                                 style="width: ${item.ecoScore}%" 
+                                 aria-valuenow="${item.ecoScore}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                                 ${item.ecoScore}
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge ${item.ecoScore > 80 ? 'bg-success' : 'bg-warning text-dark'}">
+                            ${item.ecoScore > 80 ? '🌳 Excellent' : '⚠️ Improve'}
+                        </span>
+                    </td>
+                </tr>
+            `}).join('');
+            
+        } catch (error) {
+            console.error('Error loading leaderboard:', error);
+            document.getElementById('leaderboard-body').innerHTML = 
+                `<tr><td colspan="6" class="text-center text-danger">Failed to load leaderboard data.</td></tr>`;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadLeaderboard);
+</script>
+
+</body>
+</html>

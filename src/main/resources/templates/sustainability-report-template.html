@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <style>
+        body { font-family: 'Helvetica', sans-serif; color: #333; }
+        .header { background-color: #2ecc71; color: white; padding: 20px; text-align: center; }
+        .metric-box { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .green-text { color: #27ae60; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Sustainability Report</h1>
+        <p th:text="${reportMonth}"></p>
+    </div>
+
+    <div class="metric-box">
+        <h3>Carbon Footprint Summary</h3>
+        <p>Total CO2 Avoided: <span class="green-text" th:text="${co2Saved} + ' kg'"></span></p>
+        <p>Total Distance Logged: <span th:text="${totalDistance} + ' km'"></span></p>
+    </div>
+
+    <div class="metric-box">
+        <h3>Top Performing Vehicle</h3>
+        <p>The most efficient vehicle this month was: <b th:text="${topVehicle}"></b></p>
+    </div>
+</body>
+</html>
